@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { useWorkspace } from "@/lib/WorkspaceContext";
 import { apiFetch, ApiError } from "@/lib/api";
-import { WIDGET_TYPES, DISPLAY_MODES, PRESETS, defaultQuestionConfig, buildEmbedSnippet } from "@/lib/widgetDefaults";
+import { WIDGET_TYPES, DISPLAY_MODES, PRESETS, defaultQuestionConfig } from "@/lib/widgetDefaults";
+import { EmbedSnippet } from "@/components/EmbedSnippet";
 
 const STEP_LABELS = ["Organisation", "Project", "Team", "Widget", "Finish"];
 
@@ -313,9 +314,7 @@ export default function OnboardingPage() {
           <div className="stack">
             <h2 style={{ margin: 0 }}>You&rsquo;re all set</h2>
             <p className="muted small">Add this snippet to your site to start collecting feedback.</p>
-            {publicKey && widgetId && (
-              <textarea className="input" rows={9} readOnly value={buildEmbedSnippet(publicKey, widgetId)} />
-            )}
+            {publicKey && widgetId && <EmbedSnippet publicKey={publicKey} widgetId={widgetId} />}
             <div className="row">
               <button className="btn btn-primary" onClick={() => router.replace("/widgets")}>
                 Go to Widgets

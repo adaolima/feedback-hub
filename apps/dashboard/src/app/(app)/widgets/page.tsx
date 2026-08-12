@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api";
 import { useWorkspace } from "@/lib/WorkspaceContext";
-import { Widget, Survey } from "@/lib/types";
-import { WIDGET_TYPES, DISPLAY_MODES, PRESETS, defaultQuestionConfig, buildEmbedSnippet } from "@/lib/widgetDefaults";
+import { Widget, Survey, ApiKey } from "@/lib/types";
+import { WIDGET_TYPES, DISPLAY_MODES, PRESETS, defaultQuestionConfig } from "@/lib/widgetDefaults";
+import { EmbedSnippet } from "@/components/EmbedSnippet";
 
 export default function WidgetsPage() {
   const { currentProjectId } = useWorkspace();
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [surveys, setSurveys] = useState<Survey[]>([]);
+  const [publicKey, setPublicKey] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [type, setType] = useState("rating");
@@ -24,6 +26,10 @@ export default function WidgetsPage() {
     if (!currentProjectId) return;
     apiFetch<{ widgets: Widget[] }>(`/api/v1/widgets?projectId=${currentProjectId}`).then((r) => setWidgets(r.widgets));
     apiFetch<{ surveys: Survey[] }>(`/api/v1/surveys?projectId=${currentProjectId}`).then((r) => setSurveys(r.surveys));
+    apiFetch<{ apiKeys: ApiKey[] }>(`/api/v1/api-keys?projectId=${currentProjectId}`).then((r) => {
+      const key = r.apiKeys.find((k) => k.type === "public" && !k.revoked_at && k.key_value);
+      setPublicKey(key?.key_value ?? null);
+    });
   }
 
   useEffect(loadWidgets, [currentProjectId]);
@@ -180,19 +186,24 @@ export default function WidgetsPage() {
         </div>
       )}
 
-      {selected && <EmbedModal widget={selected} onClose={() => setSelected(null)} />}
+      {selected && <EmbedModal widget={selected} publicKey={publicKey} onClose={() => setSelected(null)} />}
     </div>
   );
 }
 
-function EmbedModal({ widget, onClose }: { widget: Widget; onClose: () => void }) {
-  const snippet = buildEmbedSnippet("pk_your_public_key", widget.id);
-
+function EmbedModal({ widget, publicKey, onClose }: { widget: Widget; publicKey: string | null; onClose: () => void }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal stack" onClick={(e) => e.stopPropagation()}>
         <h3 style={{ marginTop: 0 }}>{widget.name} - Embed code</h3>
-        <textarea className="input" rows={10} readOnly value={snippet} />
+        {publicKey ? (
+          <EmbedSnippet publicKey={publicKey} widgetId={widget.id} />
+        ) : (
+          <p className="muted small">
+            This project has no public API key yet. Create one on the{" "}
+            <a href="/api-keys">API Keys</a> page, then reopen this dialog.
+          </p>
+        )}
         <button className="btn" onClick={onClose}>
           Close
         </button>

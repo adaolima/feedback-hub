@@ -188,6 +188,18 @@ analytics), but all of it is expected for a "complete" implementation.
       (`packages/sdk/src/render.ts`'s `renderSurvey`). Verified via curl: all 3 answers now return
       with correct `question_id`/`question_title`, in question order; full test suite still passes
       (9/9).
+- [x] **No in-panel instructions for React/Vue/Angular integration.** The dashboard's "Embed code"
+      modal (Widgets page) and the onboarding wizard's finish step only ever showed a vanilla-JS
+      `<script>` snippet; `docs/react.md`/`docs/vue.md`/`docs/angular.md` existed only as repo
+      markdown, never surfaced anywhere in the running app. Also, the embed modal was showing a
+      hardcoded `"pk_your_public_key"` placeholder instead of the project's real public key.
+      **Fixed**: added `EmbedFramework`-aware snippet builders to `lib/widgetDefaults.ts`
+      (`buildReactSnippet`/`buildVueSnippet`/`buildAngularSnippet`, alongside the existing
+      `buildEmbedSnippet` for vanilla JS) and a shared `components/EmbedSnippet.tsx` tab switcher,
+      used by both the Widgets page's embed modal and the onboarding wizard's finish step. The
+      Widgets page now fetches the project's real public key (reusing the same
+      find-existing-or-none pattern as the wizard) and shows a link to API Keys instead of a fake
+      key when none exists yet.
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

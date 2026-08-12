@@ -34,6 +34,8 @@ export function defaultQuestionConfig(type: string): Record<string, any> {
   }
 }
 
+export type EmbedFramework = "vanilla" | "react" | "vue" | "angular";
+
 export function buildEmbedSnippet(publicKey: string, widgetId: string): string {
   return `<script>
   window.FeedbackHubConfig = { projectKey: "${publicKey}" };
@@ -45,4 +47,70 @@ export function buildEmbedSnippet(publicKey: string, widgetId: string): string {
 
 <!-- Or trigger it manually from anywhere: -->
 <script>FeedbackHub.open("${widgetId}");</script>`;
+}
+
+export function buildReactSnippet(publicKey: string, widgetId: string): string {
+  return `// npm install @feedbackhub/react
+
+import { FeedbackHubProvider, useFeedback } from "@feedbackhub/react";
+
+function App() {
+  return (
+    <FeedbackHubProvider projectKey="${publicKey}" sdkUrl="${API_URL}/sdk.js" apiBaseUrl="${API_URL}">
+      <YourApp />
+    </FeedbackHubProvider>
+  );
+}
+
+function FeedbackButton() {
+  const feedback = useFeedback();
+  return <button onClick={() => feedback.open("${widgetId}")}>Give feedback</button>;
+}`;
+}
+
+export function buildVueSnippet(publicKey: string, widgetId: string): string {
+  return `// npm install @feedbackhub/vue
+
+// main.ts
+import { createApp } from "vue";
+import { createFeedbackHub } from "@feedbackhub/vue";
+import App from "./App.vue";
+
+const app = createApp(App);
+app.use(createFeedbackHub({ projectKey: "${publicKey}", sdkUrl: "${API_URL}/sdk.js" }));
+app.mount("#app");
+
+// any component
+<script setup lang="ts">
+import { useFeedback } from "@feedbackhub/vue";
+const feedback = useFeedback();
+</script>
+
+<template>
+  <button @click="feedback.open('${widgetId}')">Give feedback</button>
+</template>`;
+}
+
+export function buildAngularSnippet(publicKey: string, widgetId: string): string {
+  return `// npm install @feedbackhub/angular
+
+import { FeedbackHubModule } from "@feedbackhub/angular";
+
+@NgModule({
+  imports: [
+    FeedbackHubModule.forRoot({ projectKey: "${publicKey}", sdkUrl: "${API_URL}/sdk.js" }),
+  ],
+})
+export class AppModule {}
+
+// any component
+import { FeedbackHubService } from "@feedbackhub/angular";
+
+@Component({ /* ... */ })
+export class FeedbackButtonComponent {
+  constructor(private feedback: FeedbackHubService) {}
+  openWidget() {
+    this.feedback.open("${widgetId}");
+  }
+}`;
 }
