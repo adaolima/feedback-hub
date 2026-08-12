@@ -172,6 +172,22 @@ analytics), but all of it is expected for a "complete" implementation.
       rows directly into the running database. Verified via curl: `/public/config` now returns the
       survey widget with all 3 questions attached, and `GET /responses/:id` returns both answers;
       full test suite still passes (9/9).
+- [x] **Survey answers showed raw option value codes, not the labels the respondent saw, and no
+      question text.** `GET /api/v1/responses/:id` returned each answer as bare
+      `{ question_id, type, value }` — no join back to `survey_questions` for the question's title,
+      and for `choice`/`multiple_choice` answers `value` is the raw selected option `value`
+      string(s) (e.g. `["blue"]`), not the human-readable `label`. The dashboard's Response Detail
+      modal rendered this as-is (`JSON.stringify` for arrays), so a multi-select answer showed as a
+      value-slug array instead of the actual chosen options. **Fixed**: the endpoint now joins
+      `survey_questions` for `question_title` and, for choice-type answers, resolves each selected
+      value against `survey_options` into an `optionLabels` array; the dashboard renders
+      `question_title` as the label and `optionLabels.join(", ")` when present. Also fixed the seed
+      sample survey response, which was itself incomplete — missing the NPS follow-up answer even
+      though its conditional logic (rating ≤ 3) was satisfied, and had a `null` `question_id` on
+      the text answer where a real SDK submission always attaches one
+      (`packages/sdk/src/render.ts`'s `renderSurvey`). Verified via curl: all 3 answers now return
+      with correct `question_id`/`question_title`, in question order; full test suite still passes
+      (9/9).
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

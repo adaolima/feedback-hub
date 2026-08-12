@@ -141,8 +141,12 @@ export default function ResponsesPage() {
                 </p>
                 {selected.answers.map((a) => (
                   <p key={a.id} style={{ margin: 0 }}>
-                    <span className="muted">{a.type}:</span>{" "}
-                    {typeof a.value === "object" ? JSON.stringify(a.value) : String(a.value)}
+                    <span className="muted">{a.question_title ?? a.type}:</span>{" "}
+                    {a.optionLabels
+                      ? a.optionLabels.join(", ")
+                      : typeof a.value === "object"
+                        ? JSON.stringify(a.value)
+                        : String(a.value)}
                   </p>
                 ))}
               </div>

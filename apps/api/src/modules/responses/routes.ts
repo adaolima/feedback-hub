@@ -206,8 +206,44 @@ responsesRouter.get(
       requireProjectMembership()(req, res, (err?: unknown) => (err ? reject(err) : resolve()));
     });
 
-    const answers = await query(`SELECT * FROM response_answers WHERE response_id = $1`, [req.params.id]);
-    res.json({ response: { ...result.rows[0], answers: answers.rows } });
+    const answers = await query<{
+      id: string;
+      question_id: string | null;
+      type: string;
+      value: unknown;
+      created_at: string;
+      question_title: string | null;
+    }>(
+      `SELECT ra.*, sq.title AS question_title
+       FROM response_answers ra
+       LEFT JOIN survey_questions sq ON sq.id = ra.question_id
+       WHERE ra.response_id = $1
+       ORDER BY sq.position ASC NULLS LAST, ra.created_at ASC`,
+      [req.params.id]
+    );
+
+    // For choice/multiple_choice answers, resolve the raw option value(s) to their labels so the
+    // dashboard can show what the respondent actually saw, not internal value slugs.
+    const questionIds = [...new Set(answers.rows.map((a) => a.question_id).filter((id): id is string => !!id))];
+    const optionLabels: Record<string, Record<string, string>> = {};
+    if (questionIds.length) {
+      const options = await query<{ question_id: string; value: string; label: string }>(
+        `SELECT question_id, value, label FROM survey_options WHERE question_id = ANY($1)`,
+        [questionIds]
+      );
+      for (const opt of options.rows) {
+        (optionLabels[opt.question_id] ??= {})[opt.value] = opt.label;
+      }
+    }
+
+    const enrichedAnswers = answers.rows.map((a) => {
+      if ((a.type !== "choice" && a.type !== "multiple_choice") || !a.question_id) return a;
+      const labels = optionLabels[a.question_id] ?? {};
+      const values = Array.isArray(a.value) ? a.value : [a.value];
+      return { ...a, optionLabels: values.map((v) => labels[String(v)] ?? String(v)) };
+    });
+
+    res.json({ response: { ...result.rows[0], answers: enrichedAnswers } });
   })
 );
 

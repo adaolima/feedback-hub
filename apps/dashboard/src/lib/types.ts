@@ -72,7 +72,14 @@ export interface FeedbackResponse {
   feedback_text: string | null;
   metadata: Record<string, any>;
   created_at: string;
-  answers?: Array<{ id: string; question_id: string | null; type: string; value: unknown }>;
+  answers?: Array<{
+    id: string;
+    question_id: string | null;
+    question_title: string | null;
+    type: string;
+    value: unknown;
+    optionLabels?: string[];
+  }>;
 }
 
 export interface ApiKey {

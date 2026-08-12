@@ -123,14 +123,14 @@ async function seed() {
      VALUES ($1, 'rating', 'How satisfied are you with this feature?', true, 0, $2) RETURNING id`,
     [surveyId, JSON.stringify({ type: "rating", min: 1, max: 5 })]
   );
-  await pool.query(
+  const q2 = await pool.query(
     `INSERT INTO survey_questions (survey_id, type, title, required, position, config)
-     VALUES ($1, 'text', 'What could we improve?', false, 1, $2)`,
+     VALUES ($1, 'text', 'What could we improve?', false, 1, $2) RETURNING id`,
     [surveyId, JSON.stringify({ type: "text", long: true, maxLength: 1000, question: "What could we improve?" })]
   );
-  await pool.query(
+  const q3 = await pool.query(
     `INSERT INTO survey_questions (survey_id, type, title, required, position, config, conditional_logic)
-     VALUES ($1, 'nps', 'Would you recommend us?', true, 2, $2, $3)`,
+     VALUES ($1, 'nps', 'Would you recommend us?', true, 2, $2, $3) RETURNING id`,
     [
       surveyId,
       JSON.stringify({ type: "nps" }),
@@ -202,7 +202,13 @@ async function seed() {
   );
   await pool.query(
     `INSERT INTO response_answers (response_id, question_id, type, value) VALUES ($1, $2, $3, $4)`,
-    [surveyResponse.rows[0].id, null, "text", JSON.stringify("Checkout felt slower than expected.")]
+    [surveyResponse.rows[0].id, q2.rows[0].id, "text", JSON.stringify("Checkout felt slower than expected.")]
+  );
+  // The NPS follow-up's conditional_logic (q1 <= 3) is satisfied by the rating of 2 above, so a
+  // real SDK submission would include this answer too — kept consistent here.
+  await pool.query(
+    `INSERT INTO response_answers (response_id, question_id, type, value) VALUES ($1, $2, $3, $4)`,
+    [surveyResponse.rows[0].id, q3.rows[0].id, "nps", JSON.stringify(6)]
   );
 
   console.log("Seed complete.");
