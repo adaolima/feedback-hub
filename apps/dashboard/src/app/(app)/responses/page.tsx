@@ -134,6 +134,19 @@ export default function ResponsesPage() {
             {selected.rating !== null && <p>Rating: {selected.rating}</p>}
             {selected.nps_score !== null && <p>NPS score: {selected.nps_score}</p>}
             {selected.feedback_text && <p>Feedback: &ldquo;{selected.feedback_text}&rdquo;</p>}
+            {selected.answers && selected.answers.length > 0 && (
+              <div className="stack" style={{ gap: 4 }}>
+                <p className="muted small" style={{ marginBottom: 0 }}>
+                  Survey answers:
+                </p>
+                {selected.answers.map((a) => (
+                  <p key={a.id} style={{ margin: 0 }}>
+                    <span className="muted">{a.type}:</span>{" "}
+                    {typeof a.value === "object" ? JSON.stringify(a.value) : String(a.value)}
+                  </p>
+                ))}
+              </div>
+            )}
             <p className="muted small">Page: {selected.metadata?.pageUrl ?? "-"}</p>
             <p className="muted small">
               Device: {selected.metadata?.deviceType ?? "-"} &middot; Browser: {selected.metadata?.browser ?? "-"} &middot; OS: {selected.metadata?.os ?? "-"}

@@ -157,6 +157,21 @@ analytics), but all of it is expected for a "complete" implementation.
       opens the survey immediately, in addition to its existing delayed floating button. Patched
       into the live database directly (`jsonb_set` on the seeded row) in addition to the seed
       source change.
+- [x] **The seeded survey was never reachable — no way to view a survey response existed.**
+      `seed.ts` created the "Post-Checkout Survey" directly in the `surveys` table but never
+      wrapped it in a `widgets` row; `/public/config` only ever returns `widgets`, so the SDK could
+      never display or accept a submission for it — only the dashboard's Surveys (build/publish)
+      page could see it existed. Separately, even where a survey response *did* exist,
+      `GET /api/v1/responses/:id` already returned per-question `answers` (joined from
+      `response_answers`) and the dashboard's `FeedbackResponse` type already declared that field,
+      but the Response Detail modal (`apps/dashboard/src/app/(app)/responses/page.tsx`) never
+      rendered it. **Fixed**: `seed.ts` now inserts a `type: 'survey'` widget (`modal` display mode)
+      wrapping the seeded survey, plus one sample survey response with two `response_answers` rows;
+      the Response Detail modal now renders `selected.answers` (type + value per question). Also
+      added a "Open post-checkout survey" trigger button to the demo site. Patched the equivalent
+      rows directly into the running database. Verified via curl: `/public/config` now returns the
+      survey widget with all 3 questions attached, and `GET /responses/:id` returns both answers;
+      full test suite still passes (9/9).
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

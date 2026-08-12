@@ -138,6 +138,22 @@ async function seed() {
     ]
   );
 
+  // A survey only becomes reachable by the SDK (and therefore submittable) once it's wrapped in a
+  // published widget — /public/config only ever returns widgets, never surveys directly.
+  const surveyWidget = await pool.query(
+    `INSERT INTO widgets (project_id, name, type, survey_id, config, status, published_at)
+     VALUES ($1, 'Post-Checkout Survey', 'survey', $2, $3, 'published', now()) RETURNING id`,
+    [
+      projectId,
+      surveyId,
+      JSON.stringify({
+        displayMode: "modal",
+        appearance: { preset: "corporate", primaryColor: "#1d4ed8" },
+        targeting: { frequency: "always" },
+      }),
+    ]
+  );
+
   const now = Date.now();
   const sampleResponses: Array<[string, number | null, number | null, string | null, string]> = [
     [ratingWidget.rows[0].id, 5, null, "Amazing experience!", "/pricing"],
@@ -165,6 +181,29 @@ async function seed() {
       ]
     );
   }
+
+  const surveyResponse = await pool.query(
+    `INSERT INTO responses (project_id, widget_id, survey_id, anonymous_id, rating, feedback_text, metadata, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+    [
+      projectId,
+      surveyWidget.rows[0].id,
+      surveyId,
+      `anon_${Math.random().toString(36).slice(2, 10)}`,
+      2,
+      "Checkout felt slower than expected.",
+      JSON.stringify({ pageUrl: "/checkout/success", deviceType: "desktop", browser: "Chrome", os: "macOS", country: "IE" }),
+      new Date(now - Math.random() * 1000 * 60 * 60 * 24 * 14),
+    ]
+  );
+  await pool.query(
+    `INSERT INTO response_answers (response_id, question_id, type, value) VALUES ($1, $2, $3, $4)`,
+    [surveyResponse.rows[0].id, q1.rows[0].id, "rating", JSON.stringify(2)]
+  );
+  await pool.query(
+    `INSERT INTO response_answers (response_id, question_id, type, value) VALUES ($1, $2, $3, $4)`,
+    [surveyResponse.rows[0].id, null, "text", JSON.stringify("Checkout felt slower than expected.")]
+  );
 
   console.log("Seed complete.");
   console.log(`Demo login: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
