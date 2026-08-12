@@ -23,4 +23,4 @@ COPY --from=builder /repo/apps/dashboard/package.json ./package.json
 COPY --from=builder /repo/node_modules /repo/node_modules
 
 EXPOSE 3000
-CMD ["node_modules/.bin/next", "start", "-p", "3000"]
+CMD ["/repo/node_modules/.bin/next", "start", "-p", "3000"]

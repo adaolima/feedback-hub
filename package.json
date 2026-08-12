@@ -7,13 +7,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:api": "npm run dev --workspace apps/api",
+    "build:shared": "npm run build --workspace packages/shared",
+    "dev:api": "npm run build:shared && npm run dev --workspace apps/api",
     "dev:dashboard": "npm run dev --workspace apps/dashboard",
     "dev:demo": "npm run dev --workspace apps/demo",
     "build:sdk": "npm run build --workspace packages/sdk",
     "migrate": "npm run migrate --workspace apps/api",
     "seed": "npm run seed --workspace apps/api",
-    "test:api": "npm run test --workspace apps/api"
+    "test:api": "npm run build:shared && npm run test --workspace apps/api"
   },
   "devDependencies": {
     "typescript": "^5.5.4"

@@ -339,7 +339,7 @@ function renderSurvey(
   onSubmit: (payload: SubmitPayload) => Promise<void>
 ) {
   const answers: Record<string, unknown> = {};
-  const collectedAnswers: SubmitPayload["answers"] = [];
+  const collectedAnswers: NonNullable<SubmitPayload["answers"]> = [];
   let index = 0;
 
   function showNext() {

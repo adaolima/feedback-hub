@@ -46,7 +46,8 @@ feedbackhub/
 │   ├── shared/      Framework-independent types (QuestionType, roles, NPS calc, ...)
 │   ├── sdk/         Vanilla JS/TS embeddable SDK, bundled to dist/sdk.js via esbuild
 │   ├── react/       FeedbackHubProvider + useFeedback wrapper around the SDK
-│   └── angular/     (planned) injectable Angular service wrapper
+│   ├── angular/     FeedbackHubModule.forRoot() + injectable FeedbackHubService wrapper
+│   └── vue/         createFeedbackHub() plugin + useFeedback() composable
 ├── database/
 │   ├── migrations/  Plain numbered .sql files, applied by a custom runner (no ORM)
 │   └── seeds/       Pointer to apps/api/src/scripts/seed.ts (needs password hashing)
@@ -91,10 +92,9 @@ API keys, webhooks/integrations, team, settings), rating/NPS/thumbs/emoji/text/c
 choice widgets, survey builder with simple AND conditional logic, JS SDK with Shadow DOM rendering,
 targeting (URL/delay/event/frequency/exit-intent), CSV/JSON export, webhooks, OpenAPI docs, Docker
 Compose, seed data, integration tests (auth, tenant isolation, CRUD, responses, analytics, api
-keys, webhooks).
+keys, webhooks), React/Angular/Vue framework wrappers around the SDK.
 
 **Not yet implemented (documented as future work, architecture allows it):**
-- Angular/Vue framework wrappers (only React wrapper exists so far).
 - Slack/Teams/email/Zapier integrations (webhooks provide the extension point).
 - AI-powered sentiment/topic analysis (schema is ready via `response_analysis`).
 - Advanced segmentation and nested/OR conditional logic (current model is AND-only by design).

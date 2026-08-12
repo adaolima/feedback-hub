@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 import crypto from "crypto";
 import { env } from "../config/env";
 
@@ -8,7 +8,9 @@ export interface AccessTokenPayload {
 }
 
 export function signAccessToken(payload: AccessTokenPayload): string {
-  return jwt.sign(payload, env.jwtAccessSecret, { expiresIn: env.accessTokenTtl });
+  return jwt.sign(payload, env.jwtAccessSecret, {
+    expiresIn: env.accessTokenTtl as SignOptions["expiresIn"],
+  });
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {

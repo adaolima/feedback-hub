@@ -28,7 +28,7 @@ class FeedbackHubClient {
       this.debug = Boolean(options.debug);
       const baseUrl = options.apiBaseUrl ?? this.inferApiBaseUrl();
       this.api = new ApiClient(baseUrl, options.projectKey);
-      this.identity = (loadIdentity() as Identity) ?? {};
+      this.identity = loadIdentity() ?? {};
       this.initialized = true;
 
       incrementPageViews();

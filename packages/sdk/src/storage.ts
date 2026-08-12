@@ -1,3 +1,5 @@
+import { Identity } from "./types";
+
 const ANON_ID_KEY = "fh_anonymous_id";
 const IDENTITY_KEY = "fh_identity";
 const DISPLAY_STATE_PREFIX = "fh_display_";
@@ -47,11 +49,11 @@ export function getSessionId(): string {
   }
 }
 
-export function saveIdentity(identity: Record<string, unknown>): void {
+export function saveIdentity(identity: Identity): void {
   safeStorage()?.setItem(IDENTITY_KEY, JSON.stringify(identity));
 }
 
-export function loadIdentity(): Record<string, unknown> | null {
+export function loadIdentity(): Identity | null {
   const raw = safeStorage()?.getItem(IDENTITY_KEY);
   return raw ? JSON.parse(raw) : null;
 }
