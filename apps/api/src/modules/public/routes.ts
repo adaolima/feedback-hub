@@ -58,7 +58,7 @@ const trackEventSchema = z.object({
   projectKey: z.string().min(1),
   name: z.string().min(1).max(160),
   anonymousId: z.string().max(120).optional(),
-  userId: z.string().uuid().optional(),
+  userId: z.string().max(255).optional(), // the host site's own end-user id, not a FeedbackHub account
   sessionId: z.string().max(120).optional(),
   properties: z.record(z.any()).default({}),
 });

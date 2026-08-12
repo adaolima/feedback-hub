@@ -133,6 +133,30 @@ analytics), but all of it is expected for a "complete" implementation.
       rating even though that's the near-universal convention for this widget type. **Fixed**:
       the rating renderer now shows clickable ★/☆ stars with a hover-fill preview, replacing the
       numbered buttons; submit payload shape (`{ rating, answers }`) is unchanged.
+- [x] **`identify()`'s `userId` was modeled as a FeedbackHub account, not an external user id.**
+      `responses.user_id` and `events.user_id` were `UUID REFERENCES users(id)` — a foreign key to
+      FeedbackHub's own *dashboard login accounts*. But `FeedbackHub.identify({ userId })` is meant
+      to carry the *host website's own* end-user id (an arbitrary string from the customer's own
+      system, e.g. `"demo-user-1"` or `"cus_12345"` — never a FeedbackHub account). As shipped, any
+      `identify()` call with a non-UUID id (the common case) made every subsequent response
+      submission or tracked event fail Zod's `z.string().uuid()` outright; even a UUID-shaped id
+      would've violated the FK unless it happened to match a real dashboard user. This is what broke
+      the demo's "Identify as demo user" → "Track: checkout_completed" flow.
+      **Fixed**: new migration `database/migrations/0002_external_user_id_as_text.sql` drops both
+      FKs and widens the columns to free-form `TEXT`, consistent with how `anonymous_id`/
+      `session_id` were already modeled; the two Zod schemas (`responses/routes.ts`,
+      `public/routes.ts`) now accept any string up to 255 chars instead of requiring a UUID.
+      Verified end-to-end with curl reproducing the exact demo sequence (non-UUID `userId` on both
+      a tracked event and a response submission); full test suite still passes (9/9).
+- [x] **No seeded widget was configured to react to a tracked event**, even though the demo's own
+      copy says tracking a product event "can trigger targeted surveys." `FeedbackHub.track()`'s
+      event-triggering logic (`checkEventTriggers` in `packages/sdk/src/index.ts`) was correct, but
+      none of the seed widgets had `targeting.events` set, so clicking "Track: checkout_completed"
+      never visibly did anything even once the request itself started succeeding. **Fixed**: seed's
+      "NPS Survey" widget now includes `events: ["checkout_completed"]`, so tracking that event
+      opens the survey immediately, in addition to its existing delayed floating button. Patched
+      into the live database directly (`jsonb_set` on the seeded row) in addition to the seed
+      source change.
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

@@ -71,7 +71,9 @@ async function seed() {
         displayMode: "floating",
         appearance: { preset: "minimal", primaryColor: "#0ea5e9" },
         // See note on the rating widget above re: "always" vs. a production-appropriate cap.
-        targeting: { delaySeconds: 5, frequency: "always" },
+        // events: opens immediately on a matching track() call, demonstrating event-triggered
+        // display — not just the delayed floating button.
+        targeting: { delaySeconds: 5, frequency: "always", events: ["checkout_completed"] },
         question: { type: "nps", followUpQuestion: "What could we improve?" },
       }),
     ]

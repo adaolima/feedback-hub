@@ -20,7 +20,7 @@ const createResponseSchema = z.object({
   surveyId: z.string().uuid().optional(),
   anonymousId: z.string().max(120).optional(),
   sessionId: z.string().max(120).optional(),
-  userId: z.string().uuid().optional(),
+  userId: z.string().max(255).optional(), // the host site's own end-user id, not a FeedbackHub account
   rating: z.number().int().min(0).max(10).optional(),
   npsScore: z.number().int().min(0).max(10).optional(),
   feedbackText: z.string().max(10000).optional(),
