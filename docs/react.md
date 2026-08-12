@@ -45,13 +45,72 @@ loading — calls just silently no-op until then, consistent with the SDK's fail
 Available methods: `init`, `open`, `close`, `show`, `hide`, `identify`, `track`, `destroy` — see
 [sdk.md](sdk.md) for what each does.
 
-## Next.js
+## Next.js (App Router)
 
-`packages/react` has no Next.js-specific code, but two things matter in the App Router:
+`packages/react` has no Next.js-specific code — two things matter in the App Router:
 
-- `FeedbackHubProvider` calls `useEffect`, so any component tree using it (or `useFeedback()`) needs
-  `"use client"` at the top of the file.
-- Render `<FeedbackHubProvider>` as high as makes sense for your layout (e.g. in a client component
-  wrapping `{children}` in `app/layout.tsx`), so `useFeedback()` is available anywhere below it.
+- `FeedbackHubProvider` calls `useEffect`, so any file using it (or `useFeedback()`) needs
+  `"use client"` at the top.
+- `app/layout.tsx` is usually a Server Component (it's where `metadata` exports live), so don't put
+  `"use client"` on it directly — instead push the provider into its own small client component and
+  import that into the layout.
 
-A dedicated App Router example is tracked in [TODO.md](../TODO.md).
+```tsx
+// app/providers.tsx
+"use client";
+
+import { FeedbackHubProvider } from "@feedbackhub/react";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <FeedbackHubProvider
+      projectKey={process.env.NEXT_PUBLIC_FEEDBACKHUB_PROJECT_KEY!}
+      sdkUrl={`${process.env.NEXT_PUBLIC_FEEDBACKHUB_API_URL}/sdk.js`}
+      apiBaseUrl={process.env.NEXT_PUBLIC_FEEDBACKHUB_API_URL}
+    >
+      {children}
+    </FeedbackHubProvider>
+  );
+}
+```
+
+```tsx
+// app/layout.tsx — stays a Server Component; metadata etc. still work here
+import { Providers } from "./providers";
+
+export const metadata = { title: "Your App" };
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+```tsx
+// components/feedback-button.tsx — any client component below the provider can use the hook
+"use client";
+
+import { useFeedback } from "@feedbackhub/react";
+
+export function FeedbackButton() {
+  const feedback = useFeedback();
+  return <button onClick={() => feedback.open("NPS Survey")}>Give feedback</button>;
+}
+```
+
+Project key and API URL must come from `NEXT_PUBLIC_*` env vars (Next.js only inlines env vars with
+that prefix into client bundles) — set them in `.env.local`:
+
+```
+NEXT_PUBLIC_FEEDBACKHUB_PROJECT_KEY=pk_...
+NEXT_PUBLIC_FEEDBACKHUB_API_URL=https://your-api.example.com
+```
+
+`FeedbackButton` (and anything else calling `useFeedback()`) can only be rendered from Server
+Components, not imported and called directly inside one — the `"use client"` boundary on the file
+itself handles this correctly as shown above.

@@ -54,7 +54,10 @@ analytics), but all of it is expected for a "complete" implementation.
       `ng-packagr` — fine for JIT/dev consumption, worth revisiting if this is ever published to npm.
 - [x] `packages/vue` — `createFeedbackHub(options)` plugin (`app.use(...)`) + `useFeedback()`
       composable, mirroring `packages/react`'s provider/hook shape.
-- [ ] Next.js-specific integration notes/example (App Router client component pattern).
+- [x] Next.js-specific integration notes/example (App Router client component pattern) — added to
+      [`docs/react.md`](docs/react.md): a `Providers` client component wrapping
+      `FeedbackHubProvider`, kept out of the (Server Component) root layout, plus `NEXT_PUBLIC_*`
+      env var wiring.
 - [ ] `packages/react-native` — no SDK exists for React Native today, and `packages/react` cannot
       be reused as-is: `packages/sdk` depends on browser-only APIs (`document`, `window`, `<script>`
       tag injection, Shadow DOM widget rendering, `localStorage`/`sessionStorage`), none of which
