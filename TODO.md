@@ -38,15 +38,15 @@ analytics), but all of it is expected for a "complete" implementation.
 - [x] Write the top-level `README.md` (what is FeedbackHub, features, architecture, quick start,
       Docker setup, env vars, SDK/React integration, API summary, deployment). Angular/Vue
       integration sections deferred until those wrappers exist (tracked below).
-- [ ] `docs/getting-started.md`
-- [ ] `docs/sdk.md`
-- [ ] `docs/react.md`
-- [ ] `docs/angular.md`
-- [ ] `docs/vue.md`
-- [ ] `docs/api.md`
-- [ ] `docs/authentication.md`
-- [ ] `docs/webhooks.md`
-- [ ] `docs/deployment.md`
+- [x] `docs/getting-started.md`
+- [x] `docs/sdk.md`
+- [x] `docs/react.md`
+- [x] `docs/angular.md`
+- [x] `docs/vue.md`
+- [x] `docs/api.md`
+- [x] `docs/authentication.md`
+- [x] `docs/webhooks.md`
+- [x] `docs/deployment.md`
 
 ## Framework integrations (Phase 2)
 - [x] `packages/angular` — injectable `FeedbackHubService` wrapper, provided via
@@ -86,6 +86,20 @@ analytics), but all of it is expected for a "complete" implementation.
       handling)
 - [ ] Dashboard frontend tests (login, survey builder, widget config, response viewing)
 - [ ] A scripted end-to-end test (Playwright or similar) covering the full Definition of Done flow
+
+## Known bugs
+- [x] **Public API CORS was broken for real deployments.** `apps/api/src/app.ts` applied a single
+      global `cors({ origin: env.corsOrigins })` allow-list to every route, including
+      `/api/v1/public/*` and `POST /api/v1/responses` — the endpoints the embeddable SDK calls from
+      *arbitrary customer websites*. In production, any customer domain not explicitly listed in
+      `CORS_ORIGINS` would have had the SDK's requests blocked by the browser (curl-based smoke
+      tests didn't catch this since curl doesn't enforce CORS). **Fixed**: `app.ts` now picks CORS
+      options per-request via `isPublicRoute()` — the public surface gets `origin: true` (reflects
+      any origin) with `credentials: false`, since public-key auth doesn't rely on cookies; the
+      cookie-authenticated admin API keeps the strict `CORS_ORIGINS` allow-list +
+      `credentials: true`. Verified with real preflight (OPTIONS) requests from an arbitrary
+      origin: public routes now return `Access-Control-Allow-Origin` for any origin, admin routes
+      still omit it for origins outside the allow-list.
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

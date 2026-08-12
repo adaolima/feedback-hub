@@ -22,17 +22,31 @@ import { apiKeysRouter } from "./modules/apiKeys/routes";
 import { webhooksRouter } from "./modules/webhooks/routes";
 import { publicRouter } from "./modules/public/routes";
 
+/**
+ * True for routes authenticated via project public key rather than a user session: everything
+ * under /api/v1/public/* plus POST /api/v1/responses. Also matches the CORS preflight (OPTIONS)
+ * for that POST route via the Access-Control-Request-Method header, since the preflight itself
+ * arrives with method OPTIONS, not POST.
+ */
+function isPublicRoute(req: express.Request): boolean {
+  if (req.path.startsWith("/api/v1/public")) return true;
+  const method = req.method === "OPTIONS" ? req.header("Access-Control-Request-Method") : req.method;
+  return req.path === "/api/v1/responses" && method === "POST";
+}
+
 export function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
   app.use(helmet());
-  app.use(
-    cors({
-      origin: env.corsOrigins,
-      credentials: true,
-    })
-  );
+  // The public, SDK-facing surface (project-public-key auth, no cookies) is embedded on arbitrary
+  // customer websites and must accept any origin. The cookie-authenticated admin API must not.
+  app.use((req, res, next) => {
+    const corsOptions = isPublicRoute(req)
+      ? { origin: true, credentials: false }
+      : { origin: env.corsOrigins, credentials: true };
+    cors(corsOptions)(req, res, next);
+  });
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
   app.use(requestId);
