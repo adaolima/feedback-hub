@@ -94,6 +94,10 @@ button {
 .badge-draft { background: #f1f5f9; color: #475569; }
 .badge-archived { background: #fee2e2; color: #991b1b; }
 
+.wizard-steps { display: flex; gap: 8px; }
+.wizard-step { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+.wizard-step.active { background: var(--primary); }
+
 .auth-shell {
   min-height: 100vh;
   display: flex;

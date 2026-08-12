@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, ApiError, API_URL } from "@/lib/api";
+import { apiFetch, ApiError } from "@/lib/api";
 import { useWorkspace } from "@/lib/WorkspaceContext";
 import { Widget, Survey } from "@/lib/types";
-
-const WIDGET_TYPES = ["rating", "nps", "thumbs", "emoji", "text", "choice", "multiple_choice", "survey"];
-const DISPLAY_MODES = ["inline", "floating", "bottom_bar", "modal", "triggered"];
-const PRESETS = ["minimal", "modern", "rounded", "corporate", "dark", "glass"];
+import { WIDGET_TYPES, DISPLAY_MODES, PRESETS, defaultQuestionConfig, buildEmbedSnippet } from "@/lib/widgetDefaults";
 
 export default function WidgetsPage() {
   const { currentProjectId } = useWorkspace();
@@ -188,47 +185,8 @@ export default function WidgetsPage() {
   );
 }
 
-function defaultQuestionConfig(type: string): Record<string, any> {
-  switch (type) {
-    case "rating":
-      return { type: "rating", min: 1, max: 5, minLabel: "Poor", maxLabel: "Excellent" };
-    case "nps":
-      return { type: "nps" };
-    case "thumbs":
-      return { type: "thumbs", question: "Was this helpful?" };
-    case "emoji":
-      return { type: "emoji", question: "How was your experience?", emojis: ["\u{1F621}", "\u{1F61E}", "\u{1F610}", "\u{1F642}", "\u{1F60D}"] };
-    case "text":
-      return { type: "text", long: false, question: "What do you think?" };
-    case "choice":
-    case "multiple_choice":
-      return {
-        type,
-        question: "Why did you visit this page?",
-        multiple: type === "multiple_choice",
-        allowOther: false,
-        options: [
-          { id: "1", label: "Learn more", value: "learn_more" },
-          { id: "2", label: "Purchase", value: "purchase" },
-          { id: "3", label: "Get support", value: "support" },
-        ],
-      };
-    default:
-      return {};
-  }
-}
-
 function EmbedModal({ widget, onClose }: { widget: Widget; onClose: () => void }) {
-  const snippet = `<script>
-  window.FeedbackHubConfig = { projectKey: "pk_your_public_key" };
-</script>
-<script async src="${API_URL}/sdk.js"></script>
-
-<!-- For an inline widget, add a container with this id: -->
-<div id="feedback-widget-${widget.id}"></div>
-
-<!-- Or trigger it manually from anywhere: -->
-<script>FeedbackHub.open("${widget.id}");</script>`;
+  const snippet = buildEmbedSnippet("pk_your_public_key", widget.id);
 
   return (
     <div className="modal-backdrop" onClick={onClose}>

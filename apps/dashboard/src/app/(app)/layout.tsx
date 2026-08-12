@@ -30,13 +30,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     currentProjectId,
     setCurrentOrganisationId,
     setCurrentProjectId,
+    loading: workspaceLoading,
   } = useWorkspace();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
-  if (loading || !user) return null;
+  // Nothing to manage yet (new account, or an existing one with no org) — send them through setup
+  // instead of dropping them into an app shell with empty org/project selectors.
+  useEffect(() => {
+    if (!loading && user && !workspaceLoading && organisations.length === 0) router.replace("/onboarding");
+  }, [loading, user, workspaceLoading, organisations, router]);
+
+  if (loading || !user || (!workspaceLoading && organisations.length === 0)) return null;
 
   return (
     <div className="app-shell">

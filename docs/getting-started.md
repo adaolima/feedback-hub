@@ -53,7 +53,11 @@ within a few seconds, along with updated numbers in **Analytics**.
 
 ## 4. Create your own project and widget
 
-From the dashboard:
+Registering a brand-new account (**Sign up** on the login page) drops you straight into an
+onboarding wizard at `/onboarding` — organisation → project → team (optional, skippable) → widget →
+a ready-to-paste embed snippet. An existing account with no organisation yet is routed there too.
+It's the fastest path to a working embed; the manual steps below are the same thing done by hand
+(useful for adding a second project/widget later, or if you skipped a wizard step):
 
 1. **Projects** → create a new project.
 2. **Widgets** → create a widget, pick a type (rating, NPS, thumbs, emoji, text, choice, multiple

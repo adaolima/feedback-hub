@@ -87,9 +87,10 @@ feedbackhub/
 
 ## 7. MVP vs. Future Work
 **Implemented (Phase 1 + parts of Phase 2):** auth, orgs, projects, RBAC, Postgres schema +
-migrations, dashboard shell (auth, projects, widgets, surveys, responses inbox/detail, analytics,
-API keys, webhooks/integrations, team, settings), rating/NPS/thumbs/emoji/text/choice/multiple
-choice widgets, survey builder with simple AND conditional logic, JS SDK with Shadow DOM rendering,
+migrations, dashboard shell (auth, onboarding wizard, projects, widgets, surveys, responses
+inbox/detail, analytics, API keys, webhooks/integrations, team, settings),
+rating/NPS/thumbs/emoji/text/choice/multiple choice widgets, survey builder with simple AND
+conditional logic, JS SDK with Shadow DOM rendering,
 targeting (URL/delay/event/frequency/exit-intent), CSV/JSON export, webhooks, OpenAPI docs, Docker
 Compose, seed data, integration tests (auth, tenant isolation, CRUD, responses, analytics, api
 keys, webhooks), React/Angular/Vue framework wrappers around the SDK.

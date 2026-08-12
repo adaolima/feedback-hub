@@ -21,7 +21,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(email, password, name || undefined);
-      router.replace("/dashboard");
+      router.replace("/onboarding");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Registration failed");
     } finally {
