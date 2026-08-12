@@ -38,6 +38,9 @@ const BASE_CSS = `
   .fh-btn-primary { background: var(--fh-primary, #4f46e5); color: #fff; border: none; }
   .fh-emoji-btn { font-size: 1.8em; background: none; border: none; cursor: pointer; padding: 4px; border-radius: 8px; }
   .fh-emoji-btn:hover, .fh-emoji-btn:focus-visible { background: rgba(0,0,0,0.06); outline: none; }
+  .fh-stars { gap: 2px; }
+  .fh-star-btn { font-size: 1.8em; line-height: 1; background: none; border: none; cursor: pointer; padding: 2px 4px; color: var(--fh-primary, #4f46e5); }
+  .fh-star-btn:focus-visible { outline: 2px solid var(--fh-primary, #4f46e5); outline-offset: 2px; border-radius: 4px; }
   textarea, input[type="text"] {
     width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #d1d5db;
     font-size: 1em; color: inherit; background: #fff;
@@ -88,16 +91,25 @@ function renderQuestionBody(
       title.textContent = config.question ?? "How would you rate your experience?";
       root.appendChild(title);
       const row = document.createElement("div");
-      row.className = "fh-row";
+      row.className = "fh-row fh-stars";
       row.setAttribute("role", "group");
       row.setAttribute("aria-label", "Rating");
+      const stars: HTMLButtonElement[] = [];
+      const paint = (filledCount: number) => {
+        stars.forEach((star, idx) => {
+          star.textContent = idx < filledCount ? "★" : "☆"; // ★ / ☆
+        });
+      };
       for (let i = min; i <= max; i++) {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "fh-btn";
-        btn.textContent = String(i);
+        btn.className = "fh-star-btn";
+        btn.textContent = "☆";
         btn.setAttribute("aria-label", `Rate ${i} out of ${max}`);
+        btn.addEventListener("mouseenter", () => paint(i - min + 1));
+        btn.addEventListener("mouseleave", () => paint(0));
         btn.addEventListener("click", () => onSubmit({ rating: i, answers: [{ type: "rating", value: i }] }));
+        stars.push(btn);
         row.appendChild(btn);
       }
       root.appendChild(row);

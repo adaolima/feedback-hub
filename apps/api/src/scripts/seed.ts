@@ -54,7 +54,9 @@ async function seed() {
       JSON.stringify({
         displayMode: "inline",
         appearance: { preset: "modern", primaryColor: "#4f46e5" },
-        targeting: { frequency: "once_per_session" },
+        // "always" so the demo site reliably shows every widget on every visit; a real deployment
+        // would typically use a frequency cap like "once_per_session" to avoid nagging users.
+        targeting: { frequency: "always" },
         question: { type: "rating", min: 1, max: 5, minLabel: "Poor", maxLabel: "Excellent" },
       }),
     ]
@@ -68,7 +70,8 @@ async function seed() {
       JSON.stringify({
         displayMode: "floating",
         appearance: { preset: "minimal", primaryColor: "#0ea5e9" },
-        targeting: { delaySeconds: 5, frequency: "every_30_days" },
+        // See note on the rating widget above re: "always" vs. a production-appropriate cap.
+        targeting: { delaySeconds: 5, frequency: "always" },
         question: { type: "nps", followUpQuestion: "What could we improve?" },
       }),
     ]
@@ -96,7 +99,8 @@ async function seed() {
       JSON.stringify({
         displayMode: "bottom_bar",
         appearance: { preset: "glass" },
-        targeting: { frequency: "once_per_session" },
+        // See note on the rating widget above re: "always" vs. a production-appropriate cap.
+        targeting: { frequency: "always" },
         question: {
           type: "emoji",
           question: "How was your experience?",

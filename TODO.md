@@ -103,6 +103,36 @@ analytics), but all of it is expected for a "complete" implementation.
       `credentials: true`. Verified with real preflight (OPTIONS) requests from an arbitrary
       origin: public routes now return `Access-Control-Allow-Origin` for any origin, admin routes
       still omit it for origins outside the allow-list.
+- [x] **Cross-Origin-Resource-Policy also blocked every cross-origin load, independent of CORS.**
+      `helmet()`'s default `Cross-Origin-Resource-Policy: same-origin` header made the browser
+      block `/sdk.js` (and every JSON response) when loaded from a different origin — a separate
+      check from CORS, not fixed by the CORS change above. This is what actually broke the demo
+      site (`net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin` in the console, `FeedbackHub is not
+      defined` since the script never loaded) and would have broken the dashboard's real
+      browser traffic too, despite curl-based smoke tests passing (CORP, like CORS, is
+      browser-only enforcement). **Fixed**: `helmet({ crossOriginResourcePolicy: { policy:
+      "cross-origin" } })` in `apps/api/src/app.ts` — appropriate globally since every response
+      from this API is meant to be consumed cross-origin by design (dashboard, demo site, and
+      arbitrary customer sites are all separate origins from the API). CORS remains the actual
+      access-control mechanism and is unaffected by this change.
+- [x] **Seeded demo widgets used production-appropriate frequency caps, which hid them on repeat
+      demo visits.** `apps/api/src/scripts/seed.ts` seeded "Website Rating" and "Emoji Reaction"
+      with `frequency: "once_per_session"` and "NPS Survey" with `frequency: "every_30_days"` —
+      sensible for a real deployment (don't nag the same visitor repeatedly) but wrong for the demo
+      site, whose entire purpose is showcasing every widget on every visit. After the CORS/CORP
+      fixes above started letting the SDK actually load and run, repeated reloads while testing
+      triggered these caps, so "a few areas" stopped showing widgets — working as designed, just
+      configured for the wrong context. **Fixed**: seed data now uses `frequency: "always"` for all
+      four demo widgets; also patched directly into the already-seeded rows in the running database
+      (`UPDATE widgets SET config = jsonb_set(...)`) so the fix took effect without a destructive
+      reseed. The frequency-capping feature itself is untouched — only the demo's own seed config
+      changed.
+- [x] **"Rating" question type had no star UI.** `packages/sdk/src/render.ts`'s `rating` case only
+      ever rendered a row of numbered buttons (1..max) — `WidgetAppearance.iconStyle` existed in
+      `packages/shared` but was never read anywhere, so there was no way to get an actual star
+      rating even though that's the near-universal convention for this widget type. **Fixed**:
+      the rating renderer now shows clickable ★/☆ stars with a hover-fill preview, replacing the
+      numbered buttons; submit payload shape (`{ rating, answers }`) is unchanged.
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

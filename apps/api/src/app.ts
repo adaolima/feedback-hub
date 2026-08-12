@@ -38,7 +38,11 @@ export function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
-  app.use(helmet());
+  // Every response here is meant to be consumed cross-origin: the dashboard and the API are
+  // different origins, and the public/SDK surface is embedded on arbitrary customer websites.
+  // Helmet's default same-origin CORP would let the browser block those loads even where CORS
+  // allows them (a separate, independent check) — see TODO.md for the bug this fixes.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
   // The public, SDK-facing surface (project-public-key auth, no cookies) is embedded on arbitrary
   // customer websites and must accept any origin. The cookie-authenticated admin API must not.
   app.use((req, res, next) => {
