@@ -94,6 +94,18 @@ button {
 .badge-draft { background: #f1f5f9; color: #475569; }
 .badge-archived { background: #fee2e2; color: #991b1b; }
 
+.code-snippet {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 340px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.code-snippet code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: none; }
+
 .wizard-steps { display: flex; gap: 8px; }
 .wizard-step { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
 .wizard-step.active { background: var(--primary); }
