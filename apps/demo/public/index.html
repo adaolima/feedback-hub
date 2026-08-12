@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FeedbackHub Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; color: #0f172a; }
+    h1 { margin-bottom: 4px; }
+    section { margin: 40px 0; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; }
+    h2 { margin-top: 0; }
+    button.demo-btn { background: #4f46e5; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>FeedbackHub Demo</h1>
+  <p>This page demonstrates every widget type and display mode using the real FeedbackHub SDK and API.</p>
+
+  <section>
+    <h2>Inline: Rating widget</h2>
+    <p>Renders directly in the page (matched by widget name <code>Website Rating</code>).</p>
+    <div data-feedback-widget="Website Rating"></div>
+  </section>
+
+  <section>
+    <h2>Inline: Thumbs widget</h2>
+    <p>Simple binary feedback, ideal for documentation and help centres.</p>
+    <div data-feedback-widget="Was this helpful?"></div>
+  </section>
+
+  <section>
+    <h2>Floating: NPS survey</h2>
+    <p>A floating "Feedback" button appears in the corner of the page (delayed a few seconds).</p>
+  </section>
+
+  <section>
+    <h2>Bottom bar: Emoji reaction</h2>
+    <p>Appears automatically as a bottom bar once per session.</p>
+  </section>
+
+  <section>
+    <h2>Triggered / modal widgets</h2>
+    <p>Open any widget programmatically:</p>
+    <button class="demo-btn" onclick="FeedbackHub.open('NPS Survey')">Open NPS survey</button>
+    <button class="demo-btn" onclick="FeedbackHub.open('Emoji Reaction')">Open emoji reaction</button>
+  </section>
+
+  <section>
+    <h2>Identity &amp; event tracking</h2>
+    <p>Simulate identifying a user and tracking a product event that can trigger targeted surveys.</p>
+    <button class="demo-btn" onclick="identifyDemoUser()">Identify as demo user</button>
+    <button class="demo-btn" onclick="FeedbackHub.track('checkout_completed')">Track: checkout_completed</button>
+  </section>
+
+  <script>
+    function identifyDemoUser() {
+      FeedbackHub.identify({ userId: "demo-user-1", email: "user@example.com", name: "Demo User" });
+      alert("Identified as Demo User");
+    }
+  </script>
+
+  <script src="/config.js"></script>
+  <script>
+    window.FeedbackHubConfig = {
+      projectKey: window.FEEDBACKHUB_DEMO_CONFIG.projectKey,
+      apiBaseUrl: window.FEEDBACKHUB_DEMO_CONFIG.apiBaseUrl,
+      debug: true,
+    };
+  </script>
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.src = window.FEEDBACKHUB_DEMO_CONFIG.apiBaseUrl + "/sdk.js";
+      script.async = true;
+      document.head.appendChild(script);
+    })();
+  </script>
+</body>
+</html>
