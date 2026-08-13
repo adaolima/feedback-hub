@@ -46,9 +46,9 @@ authRouter.post(
     }
 
     const passwordHash = await hashPassword(password);
-    const user = await query<{ id: string; email: string; name: string | null }>(
+    const user = await query<{ id: string; email: string; name: string | null; onboarded_at: string | null }>(
       `INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3)
-       RETURNING id, email, name`,
+       RETURNING id, email, name, onboarded_at`,
       [email.toLowerCase(), passwordHash, name ?? null]
     );
 
@@ -67,8 +67,14 @@ authRouter.post(
   validateBody(loginSchema),
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-    const result = await query<{ id: string; email: string; name: string | null; password_hash: string }>(
-      `SELECT id, email, name, password_hash FROM users WHERE email = $1 AND deleted_at IS NULL`,
+    const result = await query<{
+      id: string;
+      email: string;
+      name: string | null;
+      password_hash: string;
+      onboarded_at: string | null;
+    }>(
+      `SELECT id, email, name, password_hash, onboarded_at FROM users WHERE email = $1 AND deleted_at IS NULL`,
       [email.toLowerCase()]
     );
     if (result.rowCount === 0) throw ApiError.unauthorized("Invalid email or password");
@@ -78,7 +84,10 @@ authRouter.post(
     if (!valid) throw ApiError.unauthorized("Invalid email or password");
 
     const accessToken = await issueSession(req, res, user.id, user.email);
-    res.json({ user: { id: user.id, email: user.email, name: user.name }, accessToken });
+    res.json({
+      user: { id: user.id, email: user.email, name: user.name, onboarded_at: user.onboarded_at },
+      accessToken,
+    });
   })
 );
 
@@ -131,8 +140,23 @@ authRouter.get(
   "/me",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const result = await query<{ id: string; email: string; name: string | null }>(
-      `SELECT id, email, name FROM users WHERE id = $1`,
+    const result = await query<{ id: string; email: string; name: string | null; onboarded_at: string | null }>(
+      `SELECT id, email, name, onboarded_at FROM users WHERE id = $1`,
+      [req.user!.id]
+    );
+    if (result.rowCount === 0) throw ApiError.notFound("User not found");
+    res.json({ user: result.rows[0] });
+  })
+);
+
+/** Marks the current user as having completed the onboarding wizard, so it never auto-shows again. */
+authRouter.post(
+  "/onboarding-complete",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const result = await query<{ id: string; email: string; name: string | null; onboarded_at: string | null }>(
+      `UPDATE users SET onboarded_at = COALESCE(onboarded_at, now()) WHERE id = $1
+       RETURNING id, email, name, onboarded_at`,
       [req.user!.id]
     );
     if (result.rowCount === 0) throw ApiError.notFound("User not found");

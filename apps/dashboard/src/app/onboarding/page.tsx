@@ -11,7 +11,7 @@ import { EmbedSnippet } from "@/components/EmbedSnippet";
 const STEP_LABELS = ["Organisation", "Project", "Team", "Widget", "Finish"];
 
 export default function OnboardingPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, completeOnboarding } = useAuth();
   const router = useRouter();
   const { organisations, loading: workspaceLoading, refresh, setCurrentOrganisationId, setCurrentProjectId } = useWorkspace();
 
@@ -158,6 +158,10 @@ export default function OnboardingPage() {
         });
         setPublicKey(created.apiKey.key_value);
       }
+
+      // Reaching this point is what "completed onboarding" means — do this last so a failure
+      // above (e.g. widget creation itself) doesn't mark it complete on a half-finished setup.
+      await completeOnboarding();
 
       setStep(4);
     } catch (err) {

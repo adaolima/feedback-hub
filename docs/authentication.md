@@ -22,6 +22,17 @@ tokens, and secret API keys are never stored in plaintext — only their SHA-256
 (`apps/api/src/lib/tokens.ts`); the plaintext value is returned to the client exactly once, at
 creation/rotation time.
 
+### Onboarding
+
+`users.onboarded_at` (nullable, set once) tracks whether a user has completed the dashboard's
+onboarding wizard. It's `null` for a brand-new registration; the dashboard's `(app)` layout
+redirects to `/onboarding` whenever it's `null` and never again once set —
+`POST /auth/onboarding-complete` (`COALESCE(onboarded_at, now())`, idempotent) is called by the
+wizard itself right after it successfully creates the user's first widget. This is deliberately a
+persisted flag rather than derived from current state (e.g. "has zero organisations") so it reflects
+genuine first access — an existing user who later leaves their only organisation isn't routed back
+through new-user onboarding.
+
 ### Password reset
 
 `POST /auth/password/forgot` always returns `200 { ok: true }` regardless of whether the email

@@ -200,6 +200,23 @@ analytics), but all of it is expected for a "complete" implementation.
       Widgets page now fetches the project's real public key (reusing the same
       find-existing-or-none pattern as the wizard) and shows a link to API Keys instead of a fake
       key when none exists yet.
+- [x] **Onboarding wizard re-triggered based on a heuristic ("zero organisations"), not genuine
+      first access.** The `(app)` layout redirected any signed-in user with zero organisations to
+      `/onboarding` — which meant an *existing* user who later left their only organisation would
+      incorrectly be routed through the new-user wizard again, and there was no way to distinguish
+      "never onboarded" from "currently org-less for an unrelated reason." **Fixed**: added a
+      persisted `users.onboarded_at` column (`database/migrations/0003_users_onboarded_at.sql`) and
+      `POST /api/v1/auth/onboarding-complete` (idempotent: `COALESCE(onboarded_at, now())`), called
+      by the wizard right after it successfully creates the first widget — deliberately last, so a
+      failure earlier in the flow doesn't mark a half-finished setup as complete. The layout redirect
+      now checks `user.onboarded_at` instead of organisation count, so it fires exactly once, on
+      real first access, and never again regardless of later org membership changes. Backfilled via
+      a second migration (`0004_backfill_onboarded_at.sql`, kept separate since `0003` was already
+      applied) so existing accounts with at least one organisation aren't incorrectly sent through
+      onboarding on their next login. Verified via curl: `onboarded_at` is `null` right after
+      register, gets set by the completion call, survives a subsequent login unchanged, and the
+      seeded demo account plus other pre-existing test accounts were correctly backfilled. Full test
+      suite still passes (9/9).
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

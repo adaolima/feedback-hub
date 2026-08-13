@@ -23,27 +23,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const {
-    organisations,
-    projects,
-    currentOrganisationId,
-    currentProjectId,
-    setCurrentOrganisationId,
-    setCurrentProjectId,
-    loading: workspaceLoading,
-  } = useWorkspace();
+  const { organisations, projects, currentOrganisationId, currentProjectId, setCurrentOrganisationId, setCurrentProjectId } =
+    useWorkspace();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
-  // Nothing to manage yet (new account, or an existing one with no org) — send them through setup
-  // instead of dropping them into an app shell with empty org/project selectors.
+  // onboarded_at is set once (on wizard completion) and never cleared, so this only ever fires on
+  // genuine first access — not for an existing user who later ends up with zero organisations.
   useEffect(() => {
-    if (!loading && user && !workspaceLoading && organisations.length === 0) router.replace("/onboarding");
-  }, [loading, user, workspaceLoading, organisations, router]);
+    if (!loading && user && !user.onboarded_at) router.replace("/onboarding");
+  }, [loading, user, router]);
 
-  if (loading || !user || (!workspaceLoading && organisations.length === 0)) return null;
+  if (loading || !user || !user.onboarded_at) return null;
 
   return (
     <div className="app-shell">
