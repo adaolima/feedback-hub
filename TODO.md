@@ -217,6 +217,29 @@ analytics), but all of it is expected for a "complete" implementation.
       register, gets set by the completion call, survives a subsequent login unchanged, and the
       seeded demo account plus other pre-existing test accounts were correctly backfilled. Full test
       suite still passes (9/9).
+- [x] **Survey builder had no way to add options to `choice`/`multiple_choice` questions, and even
+      if it had, the SDK wouldn't have rendered them.** Two compounding bugs:
+      - `apps/dashboard/src/app/(app)/surveys/page.tsx`'s question editor never rendered an options
+        UI at all — `DraftQuestion.options` existed in the type and was sent to the API, but there
+        was no way to populate it.
+      - `packages/sdk/src/render.ts`'s `renderSurvey` passed only `question.config ?? {}` to
+        `renderQuestionBody`, but a survey question's real text and options live on the question
+        itself (`title`, and `options` loaded from `survey_options`) — not inside its `config`
+        JSONB, the way a standalone widget's question works. So even a correctly-populated
+        `survey_options` table would never actually render: the choice/multiple-choice case reads
+        `config.options`, which stayed empty, and every question type showed its generic per-type
+        placeholder text instead of the real question title.
+      **Fixed**: added an options editor (add/remove, label-only — value is slugified from the
+      label on save) to the survey builder for `choice`/`multiple_choice`; `renderSurvey` now merges
+      `question.title` (as the `question` fallback) and, for choice-type questions,
+      `question.options` + a `multiple` flag derived from `question.type` into the config passed to
+      `renderQuestionBody`. The SDK fix is self-contained — it also fixes existing/seeded survey
+      data without needing to re-save through the builder. Verified via curl end-to-end: created a
+      survey with a `multiple_choice` question and three options through the same payload shape the
+      builder now sends, confirmed `/public/config` returns the question with `title`/`options`
+      correctly attached, submitted a response selecting two options, and confirmed the response
+      detail view resolves them to their labels (composes correctly with the earlier
+      question-title/option-label enrichment fix). Full test suite still passes (9/9).
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

@@ -3,9 +3,13 @@
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "@/lib/api";
 import { useWorkspace } from "@/lib/WorkspaceContext";
-import { Survey, SurveyQuestion } from "@/lib/types";
+import { Survey } from "@/lib/types";
 
 const QUESTION_TYPES = ["rating", "nps", "thumbs", "emoji", "text", "choice", "multiple_choice"];
+
+function slugify(text: string): string {
+  return text.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "option";
+}
 
 interface DraftQuestion {
   type: string;
@@ -58,15 +62,49 @@ export default function SurveysPage() {
     setQuestions((qs) => qs.filter((_, i) => i !== index).map((q, i) => ({ ...q, position: i })));
   }
 
+  function addOption(questionIndex: number) {
+    setQuestions((qs) =>
+      qs.map((q, i) =>
+        i === questionIndex ? { ...q, options: [...q.options, { label: "", value: "", position: q.options.length }] } : q
+      )
+    );
+  }
+
+  function updateOption(questionIndex: number, optionIndex: number, label: string) {
+    setQuestions((qs) =>
+      qs.map((q, i) =>
+        i === questionIndex
+          ? { ...q, options: q.options.map((o, oi) => (oi === optionIndex ? { ...o, label } : o)) }
+          : q
+      )
+    );
+  }
+
+  function removeOption(questionIndex: number, optionIndex: number) {
+    setQuestions((qs) =>
+      qs.map((q, i) =>
+        i === questionIndex
+          ? { ...q, options: q.options.filter((_, oi) => oi !== optionIndex).map((o, oi) => ({ ...o, position: oi })) }
+          : q
+      )
+    );
+  }
+
   async function saveSurvey(e: React.FormEvent) {
     e.preventDefault();
     if (!currentProjectId) return;
     setError(null);
     setSaving(true);
     try {
+      // The API stores each option's `value` as a stable identifier separate from its display
+      // label; derive one from the label here rather than asking the user to type both.
+      const payloadQuestions = questions.map((q) => ({
+        ...q,
+        options: q.options.map((o) => ({ ...o, value: o.value || slugify(o.label) })),
+      }));
       await apiFetch("/api/v1/surveys", {
         method: "POST",
-        body: { projectId: currentProjectId, name, questions },
+        body: { projectId: currentProjectId, name, questions: payloadQuestions },
       });
       setName("");
       setQuestions([]);
@@ -173,6 +211,34 @@ export default function SurveysPage() {
                     />
                     Required
                   </label>
+                  {(q.type === "choice" || q.type === "multiple_choice") && (
+                    <div className="stack" style={{ marginTop: 8, gap: 6 }}>
+                      <span className="small muted">
+                        Options ({q.type === "multiple_choice" ? "respondents can pick several" : "single choice"})
+                      </span>
+                      {q.options.map((opt, oi) => (
+                        <div key={oi} className="row">
+                          <input
+                            className="input"
+                            placeholder={`Option ${oi + 1}`}
+                            value={opt.label}
+                            onChange={(e) => updateOption(i, oi, e.target.value)}
+                          />
+                          <button type="button" className="btn btn-danger" onClick={() => removeOption(i, oi)}>
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      <button type="button" className="btn" onClick={() => addOption(i)}>
+                        + Add option
+                      </button>
+                      {q.options.length === 0 && (
+                        <p className="error-text small" style={{ margin: 0 }}>
+                          Add at least one option before saving.
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="row" style={{ marginTop: 8 }}>
                     <button type="button" className="btn" onClick={() => moveQuestion(i, -1)}>
                       &uarr;

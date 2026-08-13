@@ -364,7 +364,17 @@ function renderSurvey(
       return;
     }
     const question = questions[index];
-    renderQuestionBody(container, question.type, question.config ?? {}, (payload) => {
+    // Survey question text and choice options live on the question itself (title, options — the
+    // latter loaded from survey_options), not inside its JSONB config the way a standalone
+    // widget's question config works. Merge them in so renderQuestionBody sees the real content
+    // instead of falling back to its generic per-type placeholder text and an empty option list.
+    const isChoice = question.type === "choice" || question.type === "multiple_choice";
+    const questionConfig = {
+      ...(question.config ?? {}),
+      question: question.config?.question ?? question.title,
+      ...(isChoice ? { multiple: question.type === "multiple_choice", options: question.options } : {}),
+    };
+    renderQuestionBody(container, question.type, questionConfig, (payload) => {
       const value =
         payload.rating ?? payload.npsScore ?? payload.feedbackText ?? payload.answers?.[0]?.value;
       answers[question.id] = value;
