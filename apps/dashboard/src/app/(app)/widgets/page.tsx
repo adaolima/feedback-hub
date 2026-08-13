@@ -18,6 +18,8 @@ export default function WidgetsPage() {
   const [displayMode, setDisplayMode] = useState("inline");
   const [preset, setPreset] = useState("modern");
   const [surveyId, setSurveyId] = useState("");
+  const [npsFollowUp, setNpsFollowUp] = useState(false);
+  const [npsFollowUpQuestion, setNpsFollowUpQuestion] = useState("What's the main reason for your score?");
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [selected, setSelected] = useState<Widget | null>(null);
@@ -51,7 +53,12 @@ export default function WidgetsPage() {
             displayMode,
             appearance: { preset },
             targeting: { frequency: "once_per_session" },
-            question: defaultQuestionConfig(type),
+            question: {
+              ...defaultQuestionConfig(type),
+              ...(type === "nps" && npsFollowUp
+                ? { followUpQuestion: npsFollowUpQuestion.trim() || "What's the main reason for your score?" }
+                : {}),
+            },
           },
         },
       });
@@ -140,6 +147,22 @@ export default function WidgetsPage() {
                 ))}
               </select>
             </label>
+            {type === "nps" && (
+              <div className="stack" style={{ gap: 4 }}>
+                <label className="row small">
+                  <input type="checkbox" checked={npsFollowUp} onChange={(e) => setNpsFollowUp(e.target.checked)} />
+                  Ask respondents to justify their score
+                </label>
+                {npsFollowUp && (
+                  <input
+                    className="input"
+                    value={npsFollowUpQuestion}
+                    onChange={(e) => setNpsFollowUpQuestion(e.target.value)}
+                    placeholder="Follow-up question"
+                  />
+                )}
+              </div>
+            )}
             {type === "survey" && (
               <label className="stack" style={{ gap: 4 }}>
                 <span className="small">Survey</span>

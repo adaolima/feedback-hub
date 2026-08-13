@@ -240,6 +240,23 @@ analytics), but all of it is expected for a "complete" implementation.
       correctly attached, submitted a response selecting two options, and confirmed the response
       detail view resolves them to their labels (composes correctly with the earlier
       question-title/option-label enrichment fix). Full test suite still passes (9/9).
+- [x] **NPS had no way to let respondents justify their score.** `NpsConfig.followUpQuestion` (also
+      present on `RatingConfig`/`EmojiConfig`/`ThumbsConfig`) existed in `packages/shared` and was
+      even set on the seeded "NPS Survey" widget's config, but was never read anywhere in
+      `packages/sdk/src/render.ts` — clicking a score submitted immediately, no follow-up possible,
+      regardless of config. There was also no dashboard UI to set it in the first place; only the
+      hardcoded seed data ever populated it. **Fixed**: the `nps` case now checks
+      `config.followUpQuestion` and, if set, shows an optional comment step (new
+      `renderNpsFollowUp` helper) before submitting — score and comment go in one combined
+      submission (`npsScore` + `feedbackText` + both as `answers`), consistent with every other
+      question type's single-submit pattern; leaving it blank behaves like skipping. Added a
+      checkbox + text input to both the Widgets create form and the survey builder's NPS question
+      card so this is actually reachable from the dashboard, not just seed data. Verified via curl:
+      submitted an NPS response with a follow-up comment against the seeded NPS widget (which
+      already had `followUpQuestion` set) and confirmed both the score and comment answers persist
+      and appear correctly in the response detail view. Full test suite still passes (9/9).
+      **Related, not fixed here**: `followUpQuestion` on `RatingConfig`/`EmojiConfig`/`ThumbsConfig`
+      is the same kind of gap (declared, never wired up) — only NPS was in scope for this fix.
 
 ## Nice-to-haves not yet done
 - [ ] Email verification flow wired to real SMTP sending (token generation exists, no email sent)

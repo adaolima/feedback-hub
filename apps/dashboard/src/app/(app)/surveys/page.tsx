@@ -239,6 +239,32 @@ export default function SurveysPage() {
                       )}
                     </div>
                   )}
+                  {q.type === "nps" && (
+                    <div className="stack" style={{ marginTop: 8, gap: 4 }}>
+                      <label className="row small">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(q.config.followUpQuestion)}
+                          onChange={(e) =>
+                            updateQuestion(i, {
+                              config: e.target.checked
+                                ? { ...q.config, followUpQuestion: q.config.followUpQuestion || "What's the main reason for your score?" }
+                                : Object.fromEntries(Object.entries(q.config).filter(([k]) => k !== "followUpQuestion")),
+                            })
+                          }
+                        />
+                        Ask respondents to justify their score
+                      </label>
+                      {q.config.followUpQuestion && (
+                        <input
+                          className="input"
+                          value={q.config.followUpQuestion}
+                          onChange={(e) => updateQuestion(i, { config: { ...q.config, followUpQuestion: e.target.value } })}
+                          placeholder="Follow-up question"
+                        />
+                      )}
+                    </div>
+                  )}
                   <div className="row" style={{ marginTop: 8 }}>
                     <button type="button" className="btn" onClick={() => moveQuestion(i, -1)}>
                       &uarr;

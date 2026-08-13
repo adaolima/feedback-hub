@@ -135,7 +135,13 @@ function renderQuestionBody(
         btn.className = "fh-btn";
         btn.textContent = String(i);
         btn.setAttribute("aria-label", `Score ${i} out of 10`);
-        btn.addEventListener("click", () => onSubmit({ npsScore: i, answers: [{ type: "nps", value: i }] }));
+        btn.addEventListener("click", () => {
+          if (config.followUpQuestion) {
+            renderNpsFollowUp(root, i, config.followUpQuestion, onSubmit);
+          } else {
+            onSubmit({ npsScore: i, answers: [{ type: "nps", value: i }] });
+          }
+        });
         row.appendChild(btn);
       }
       root.appendChild(row);
@@ -254,6 +260,38 @@ function renderQuestionBody(
       root.appendChild(title);
     }
   }
+}
+
+/** Optional second step after an NPS score is picked, letting the respondent explain why. */
+function renderNpsFollowUp(
+  root: HTMLElement,
+  score: number,
+  question: string,
+  onSubmit: (payload: SubmitPayload) => void
+) {
+  root.innerHTML = "";
+  const title = document.createElement("h3");
+  title.textContent = question;
+  root.appendChild(title);
+  const textarea = document.createElement("textarea");
+  textarea.rows = 3;
+  textarea.placeholder = "Optional";
+  textarea.setAttribute("aria-label", question);
+  root.appendChild(textarea);
+  const submit = document.createElement("button");
+  submit.type = "button";
+  submit.className = "fh-btn fh-btn-primary";
+  submit.style.marginTop = "10px";
+  submit.textContent = "Submit";
+  submit.addEventListener("click", () => {
+    const comment = textarea.value.trim();
+    onSubmit({
+      npsScore: score,
+      feedbackText: comment || undefined,
+      answers: [{ type: "nps", value: score }, ...(comment ? [{ type: "text", value: comment }] : [])],
+    });
+  });
+  root.appendChild(submit);
 }
 
 /** Renders a thank-you state after successful submission. */
