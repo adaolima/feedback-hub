@@ -100,11 +100,14 @@ button {
   border: 1px solid var(--border);
   border-radius: 8px;
   max-height: 340px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-size: 13px;
   line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
-.code-snippet code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: none; }
+.code-snippet code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: none; white-space: inherit; }
 
 .wizard-steps { display: flex; gap: 8px; }
 .wizard-step { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
