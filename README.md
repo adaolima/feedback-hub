@@ -68,6 +68,7 @@ See [PLAN.md](PLAN.md) for the full architecture rationale and [TODO.md](TODO.md
 apps/api/            Express + TypeScript REST API (:4000)
 apps/dashboard/       Next.js admin dashboard (:3000)
 apps/demo/            Static demo site + tiny Express server (:3001)
+apps/e2e/             Playwright end-to-end test for the Definition of Done flow
 packages/shared/      Framework-independent types (QuestionType, roles, NPS calc)
 packages/sdk/         Embeddable JS SDK, bundled with esbuild to dist/sdk.js
 packages/react/       FeedbackHubProvider + useFeedback wrapper around the SDK
@@ -134,6 +135,27 @@ npm run test:api
 
 If you change the SDK, rebuild it (`npm run build:sdk`) before testing — the API serves the compiled
 `dist/sdk.js`, not the TypeScript source.
+
+The SDK and dashboard each have their own unit/component test suite (`vitest` + `jsdom`, no live
+services needed):
+
+```bash
+npm run test:sdk         # packages/sdk - init, widget rendering, identity, targeting, API failures
+npm run test:dashboard   # apps/dashboard - login, widgets, surveys, responses pages
+```
+
+There's also a Playwright end-to-end test covering the full Definition of Done flow (register → org
+→ project → widget → publish → embed → respond → view analytics) through a real browser against a
+live api/dashboard/Postgres:
+
+```bash
+docker compose up -d postgres            # or point DATABASE_URL at your own instance
+npm run build:shared && npm run build:sdk
+npm run build --workspace apps/api && npm run build --workspace apps/dashboard
+npm run migrate --workspace apps/api
+npx playwright install --with-deps chromium   # first run only
+npm run test:e2e
+```
 
 ## Environment variables
 
@@ -285,13 +307,14 @@ API, dashboard, demo). For production:
 ## Status
 
 Phase 1 (auth, orgs, projects, RBAC, schema, dashboard, widgets, SDK, React/Vue/Angular wrappers,
-webhooks, backend integration tests) is implemented and has been verified end-to-end via
-`docker compose up`. See [TODO.md](TODO.md) for the tracked list of what's left: third-party
-integrations beyond generic webhooks, AI-powered response analysis, advanced/nested conditional
-logic, and SDK/frontend test suites.
+webhooks, backend integration tests, SDK/dashboard test suites, and an end-to-end test) is
+implemented and has been verified end-to-end via `docker compose up`. See [TODO.md](TODO.md) for
+the tracked list of what's left: third-party integrations beyond generic webhooks, AI-powered
+response analysis, and advanced/nested conditional logic.
 
-The project is open source under the MIT License, with CI (build + backend integration tests)
-running on every push/PR to `main` — see the badge at the top of this file, or the
+The project is open source under the MIT License, with CI (build, backend integration tests, SDK/
+dashboard unit tests, and an end-to-end test) running on every push/PR to `main` — see the badge at
+the top of this file, or the
 [Actions tab](https://github.com/adaolima/feedback-hub/actions) for current build status.
 
 ## Contributing

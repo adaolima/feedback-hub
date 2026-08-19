@@ -10,6 +10,8 @@
 
 - [ ] I read [CONTRIBUTING.md](../CONTRIBUTING.md)
 - [ ] `npm run test:api` passes (if backend code changed)
-- [ ] I rebuilt the SDK (`npm run build:sdk`) and re-tested (if `packages/sdk` changed)
+- [ ] `npm run test:sdk` passes (if `packages/sdk` changed) and I rebuilt it (`npm run build:sdk`)
+- [ ] `npm run test:dashboard` passes (if `apps/dashboard` changed)
+- [ ] `npm run test:e2e` passes (if the Definition of Done flow itself changed)
 - [ ] I updated relevant docs (`README.md`, `docs/*.md`, `TODO.md`)
 - [ ] New/changed routes go through the tenant middleware where applicable

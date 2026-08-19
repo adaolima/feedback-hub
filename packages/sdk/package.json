@@ -7,10 +7,13 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "node build.js && tsc -p tsconfig.json --emitDeclarationOnly",
-    "dev": "node build.js --watch"
+    "dev": "node build.js --watch",
+    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run"
   },
   "devDependencies": {
     "esbuild": "^0.23.1",
-    "typescript": "^5.5.4"
+    "jsdom": "^24.1.1",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   }
 }

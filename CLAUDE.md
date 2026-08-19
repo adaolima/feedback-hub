@@ -13,6 +13,7 @@ Next.js admin dashboard, a vanilla-JS embeddable SDK, and a static demo site.
 apps/api/          Express + TypeScript REST API (port 4000)
 apps/dashboard/     Next.js admin dashboard (port 3000)
 apps/demo/          Static demo site + tiny Express server (port 3001)
+apps/e2e/           Playwright end-to-end test for the Definition of Done flow
 packages/shared/    Framework-independent types (QuestionType, roles, NPS calc)
 packages/sdk/       Embeddable JS SDK, bundled with esbuild to dist/sdk.js
 packages/react/     FeedbackHubProvider + useFeedback wrapper around the SDK
@@ -59,6 +60,9 @@ npm run dev:dashboard                    # Next.js dev server, port 3000
 npm run dev:demo                         # demo static server, port 3001
 npm run build:sdk                        # bundle packages/sdk -> dist/sdk.js (esbuild)
 npm run test:api                         # vitest + supertest integration tests (needs live Postgres)
+npm run test:sdk                         # vitest + jsdom unit tests for packages/sdk
+npm run test:dashboard                   # vitest + Testing Library tests for apps/dashboard
+npm run test:e2e                         # Playwright end-to-end test (needs live Postgres + built api/dashboard)
 docker compose up                        # full stack: postgres, migrate, api, dashboard, demo
 ```
 
@@ -75,6 +79,12 @@ docker compose up                        # full stack: postgres, migrate, api, d
   the API serves the compiled `dist/sdk.js`, not the TS source.
 - After backend changes, run `npm run test:api` (requires a reachable Postgres — see
   `docker-compose.yml`'s `postgres` service, or point `DATABASE_URL` at a local instance).
+- After SDK changes, run `npm run test:sdk`. After dashboard page/component changes, run
+  `npm run test:dashboard`. Both run against `vitest`+`jsdom` with no live services required.
+- Changes that touch the Definition of Done flow (register → org → project → widget → publish →
+  embed → respond → view analytics) should be checked against `npm run test:e2e`
+  (`apps/e2e`, Playwright) — it drives that flow through a real browser against a live
+  api/dashboard/Postgres.
 
 ## Known gaps
 See [TODO.md](TODO.md) for the full list. Notably: no Angular/Vue SDK wrappers yet, no third-party

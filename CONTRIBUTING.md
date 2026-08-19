@@ -35,6 +35,33 @@ npm run test:api
 It needs a live, reachable Postgres (`docker compose up postgres` is the easiest way) and applies
 migrations automatically.
 
+For `packages/sdk` or `apps/dashboard` changes, run the matching unit/component suite — both use
+`vitest` + `jsdom` and need no live services:
+
+```bash
+npm run test:sdk
+npm run test:dashboard
+```
+
+For changes touching the Definition of Done flow itself (register → org → project → widget →
+publish → embed → respond → view analytics), run the Playwright end-to-end test:
+
+```bash
+docker compose up -d postgres
+npm run build:shared && npm run build:sdk
+npm run build --workspace apps/api && npm run build --workspace apps/dashboard
+npm run migrate --workspace apps/api
+npx playwright install --with-deps chromium   # first run only
+npm run test:e2e
+```
+
+It spawns its own api/dashboard servers (see `apps/e2e/playwright.config.ts`) unless it finds ones
+already listening on :3000/:4000, in which case it reuses those — handy if you already have
+`docker compose up` running. Note: the API's auth endpoints are rate-limited (20 requests per 15
+minutes per IP); running the e2e suite many times in quick succession against the same long-lived
+server can trip that limit (surfaces as a `429`/"Request failed" on the register step) — restart the
+api process (or `docker compose restart api`) if that happens.
+
 ## Making changes
 
 Follow the conventions in [CLAUDE.md](CLAUDE.md) — they apply to human contributors too. In short:

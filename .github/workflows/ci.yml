@@ -24,6 +24,8 @@ jobs:
       - run: npm run build --workspace packages/react
       - run: npm run build --workspace packages/vue
       - run: npm run build --workspace packages/angular
+      - run: npm run test:sdk
+      - run: npm run test:dashboard
 
   test-api:
     name: API tests
@@ -58,3 +60,48 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:api
+
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: feedbackhub
+          POSTGRES_PASSWORD: feedbackhub
+          POSTGRES_DB: feedbackhub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U feedbackhub"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://feedbackhub:feedbackhub@localhost:5432/feedbackhub
+      JWT_ACCESS_SECRET: e2e-access-secret
+      JWT_REFRESH_SECRET: e2e-refresh-secret
+      SESSION_SECRET: e2e-session-secret
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build:shared
+      - run: npm run build:sdk
+      - run: npm run build --workspace apps/api
+      - run: npm run build --workspace apps/dashboard
+      - run: npm run migrate --workspace apps/api
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/e2e/playwright-report/
+          retention-days: 7

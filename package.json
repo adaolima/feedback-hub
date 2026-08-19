@@ -23,7 +23,10 @@
     "build:sdk": "npm run build --workspace packages/sdk",
     "migrate": "npm run migrate --workspace apps/api",
     "seed": "npm run seed --workspace apps/api",
-    "test:api": "npm run build:shared && npm run test --workspace apps/api"
+    "test:api": "npm run build:shared && npm run test --workspace apps/api",
+    "test:sdk": "npm run test --workspace packages/sdk",
+    "test:dashboard": "npm run test --workspace apps/dashboard",
+    "test:e2e": "npm run test --workspace apps/e2e"
   },
   "devDependencies": {
     "typescript": "^5.5.4"

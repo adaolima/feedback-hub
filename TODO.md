@@ -85,10 +85,14 @@ analytics), but all of it is expected for a "complete" implementation.
 - [ ] Surface `response_analysis` in the Response Detail view
 
 ## Testing gaps
-- [ ] SDK unit tests (init, widget rendering, identity, targeting, frequency limits, API failure
-      handling)
-- [ ] Dashboard frontend tests (login, survey builder, widget config, response viewing)
-- [ ] A scripted end-to-end test (Playwright or similar) covering the full Definition of Done flow
+- [x] SDK unit tests (init, widget rendering, identity, targeting, frequency limits, API failure
+      handling) — `packages/sdk/tests/`, `vitest` + `jsdom`, run via `npm run test:sdk`.
+- [x] Dashboard frontend tests (login, survey builder, widget config, response viewing) —
+      colocated `*.page.test.tsx` files under `apps/dashboard/src/app/`, `vitest` +
+      `@testing-library/react`, run via `npm run test:dashboard`.
+- [x] A scripted end-to-end test (Playwright) covering the full Definition of Done flow —
+      `apps/e2e/tests/definition-of-done.spec.ts`, run via `npm run test:e2e`. All three are wired
+      into CI (`.github/workflows/ci.yml`).
 
 ## Known bugs
 - [x] **Public API CORS was broken for real deployments.** `apps/api/src/app.ts` applied a single
