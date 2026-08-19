@@ -1,9 +1,15 @@
 # FeedbackHub
 
+[![CI](https://github.com/adaolima/feedback-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/adaolima/feedback-hub/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A self-hostable, multi-tenant feedback & survey widget platform — SurveyMonkey-like, but built for
 lightweight, contextual feedback embedded directly in your product. Create an organisation, spin up
 a project, design a widget or survey, drop a single `<script>` tag on your site, and watch responses
 land in a real-time admin dashboard.
+
+FeedbackHub is open source under the [MIT License](LICENSE). Contributions are welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions, and the PR process.
 
 ## Features
 
@@ -283,3 +289,14 @@ webhooks, backend integration tests) is implemented and has been verified end-to
 `docker compose up`. See [TODO.md](TODO.md) for the tracked list of what's left: third-party
 integrations beyond generic webhooks, AI-powered response analysis, advanced/nested conditional
 logic, and SDK/frontend test suites.
+
+## Contributing
+
+Bug reports, feature requests, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for the development setup, repo conventions, and PR checklist, and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+for community expectations. Please report security vulnerabilities privately per
+[SECURITY.md](SECURITY.md) rather than as a public issue.
+
+## License
+
+[MIT](LICENSE) © Adao Lima

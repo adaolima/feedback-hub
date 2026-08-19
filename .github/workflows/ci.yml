@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build:shared
+      - run: npm run build:sdk
+      - run: npm run build --workspace apps/api
+      - run: npm run build --workspace apps/dashboard
+      - run: npm run build --workspace packages/react
+      - run: npm run build --workspace packages/vue
+      - run: npm run build --workspace packages/angular
+
+  test-api:
+    name: API tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: feedbackhub
+          POSTGRES_PASSWORD: feedbackhub
+          POSTGRES_DB: feedbackhub
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U feedbackhub"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://feedbackhub:feedbackhub@localhost:5432/feedbackhub
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+      SESSION_SECRET: ci-session-secret
+      ACCESS_TOKEN_TTL: 15m
+      REFRESH_TOKEN_TTL_DAYS: "30"
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run test:api

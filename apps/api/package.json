@@ -2,6 +2,7 @@
   "name": "@feedbackhub/api",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

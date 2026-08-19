@@ -2,6 +2,15 @@
   "name": "feedbackhub",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adaolima/feedback-hub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adaolima/feedback-hub/issues"
+  },
+  "homepage": "https://github.com/adaolima/feedback-hub#readme",
   "workspaces": [
     "apps/*",
     "packages/*"
