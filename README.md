@@ -290,6 +290,10 @@ webhooks, backend integration tests) is implemented and has been verified end-to
 integrations beyond generic webhooks, AI-powered response analysis, advanced/nested conditional
 logic, and SDK/frontend test suites.
 
+The project is open source under the MIT License, with CI (build + backend integration tests)
+running on every push/PR to `main` — see the badge at the top of this file, or the
+[Actions tab](https://github.com/adaolima/feedback-hub/actions) for current build status.
+
 ## Contributing
 
 Bug reports, feature requests, and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
